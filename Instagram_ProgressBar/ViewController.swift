@@ -63,36 +63,73 @@ class ViewController: UIViewController {
     private let barCount = 5
     private var barInitial = 0
     
-    @IBOutlet weak var startButton: UIButton!
-    @IBOutlet weak var stopButton: UIButton!
+    @IBOutlet weak var startButton: UIButton! {
+        didSet {
+            startButton.layer.borderWidth = 1.5
+            startButton.layer.borderColor = startButton.tintColor?.cgColor
+            startButton.layer.cornerRadius = 3.0
+        }
+    }
+    @IBOutlet weak var stopButton: UIButton! {
+        didSet {
+            stopButton.layer.borderWidth = 1.5
+            stopButton.layer.borderColor = stopButton.titleColor(for: .normal)?.cgColor
+            stopButton.layer.cornerRadius = 3.0
+        }
+    }
     
     lazy var progressBaseView: UIView = {
-        let v = UIView.init(frame: CGRect(x:0,y:0,width:view.frame.width,height:5))
-        v.backgroundColor = UIColor.black
+        let v = UIView.init(frame: CGRect(x:12,y:startButton.frame.maxY-100,width:view.frame.width-(2*12),height:5))
+        v.backgroundColor = UIColor.clear
         return v
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(progressBaseView)
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterForground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
         createBars()
+    }
+    
+    @objc func didEnterForground() {
+        let holderView = getHolderView(with: barInitial)
+        let pv = getAnimatableView(with: barInitial)
+        pv.start(with: 5.0, width: holderView.frame.width) {
+            self.barInitial = self.barInitial + 1
+            if self.barInitial<self.barCount {
+                DispatchQueue.main.async {
+                    self.startButton.setTitle(AnimateType.start.desc, for: .normal)
+                    self.perform(#selector(self.didTapStart(_:)), with: self.startButton, afterDelay: 0.5)
+                }
+            }else {
+                let animatableView = self.getAnimatableView(with: self.barInitial-1)
+                animatableView.stop()
+                self.barInitial = 0
+                self.startButton.setTitle(AnimateType.start.desc, for: .normal)
+                self.stopButton.isHidden = true
+                self.nullifyAnimatableViewWidth()
+            }
+        }
     }
     
     func createBars() {
         let padding:CGFloat = 8 //GUI-Padding
         let pvHeight:CGFloat = 5
         var pvX:CGFloat = padding
-        //let pvY:CGFloat = (progressBaseView.frame.height/2)-pvHeight
         let pvY:CGFloat = 0
         let pvWidth = (progressBaseView.frame.width - ((CGFloat((barCount+1)) * padding)))/CGFloat(barCount)
         for i in 0..<barCount{
             let holder = UIView.init(frame: CGRect(x:pvX,y:pvY,width:pvWidth,height:pvHeight))
-            holder.backgroundColor = UIColor.white.withAlphaComponent(0.25)
+            holder.backgroundColor = UIColor.red.withAlphaComponent(0.1)
             holder.tag = i+88
+            holder.layer.cornerRadius = 1
+            holder.layer.masksToBounds = true
             progressBaseView.addSubview(holder)
             let pv = IGSnapProgressView.init(frame: CGRect(x:pvX,y:pvY,width:0,height:pvHeight))
-            pv.backgroundColor = UIColor.white
+            pv.backgroundColor = UIColor.red
             pv.tag = i+99
+            pv.layer.cornerRadius = holder.layer.cornerRadius
+            pv.layer.masksToBounds = true
             progressBaseView.addSubview(pv)
             pvX = pvX + pvWidth + padding
         }
@@ -121,20 +158,7 @@ class ViewController: UIViewController {
             sender.setTitle(AnimateType.pause.desc, for: .normal)
             if sender.titleLabel?.text == AnimateType.start.desc {
                 animatableView.start(with: 5.0, width: holderView.frame.width, completion: {
-                    self.barInitial = self.barInitial + 1
-                    if self.barInitial<self.barCount {
-                        DispatchQueue.main.async {
-                            sender.setTitle(AnimateType.start.desc, for: .normal)
-                            self.perform(#selector(self.didTapStart(_:)), with: sender, afterDelay: 0.5)
-                        }
-                    }else {
-                        let animatableView = self.getAnimatableView(with: self.barInitial-1)
-                        animatableView.stop()
-                        self.barInitial = 0
-                        sender.setTitle(AnimateType.start.desc, for: .normal)
-                        self.stopButton.isHidden = true
-                        self.nullifyAnimatableViewWidth()
-                    }
+                    self.didEnterForground()
                 })
             }else {
                 animatableView.play()
@@ -153,5 +177,3 @@ class ViewController: UIViewController {
     }
     
 }
-
-
