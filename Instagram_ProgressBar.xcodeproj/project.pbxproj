@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		072A5F1E1F95965500FE2FD9 /* IGSnapProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 072A5F1D1F95965500FE2FD9 /* IGSnapProgressView.swift */; };
 		073DBEA41F8F8A2B001C3AC1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073DBEA31F8F8A2B001C3AC1 /* AppDelegate.swift */; };
 		073DBEA61F8F8A2B001C3AC1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073DBEA51F8F8A2B001C3AC1 /* ViewController.swift */; };
 		073DBEA91F8F8A2B001C3AC1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 073DBEA71F8F8A2B001C3AC1 /* Main.storyboard */; };
@@ -15,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		072A5F1D1F95965500FE2FD9 /* IGSnapProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IGSnapProgressView.swift; sourceTree = "<group>"; };
 		073DBEA01F8F8A2B001C3AC1 /* Instagram_ProgressBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Instagram_ProgressBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		073DBEA31F8F8A2B001C3AC1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		073DBEA51F8F8A2B001C3AC1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -56,6 +58,7 @@
 			children = (
 				073DBEA31F8F8A2B001C3AC1 /* AppDelegate.swift */,
 				073DBEA51F8F8A2B001C3AC1 /* ViewController.swift */,
+				072A5F1D1F95965500FE2FD9 /* IGSnapProgressView.swift */,
 				073DBEA71F8F8A2B001C3AC1 /* Main.storyboard */,
 				073DBEAA1F8F8A2B001C3AC1 /* Assets.xcassets */,
 				073DBEAC1F8F8A2B001C3AC1 /* LaunchScreen.storyboard */,
@@ -138,6 +141,7 @@
 			files = (
 				073DBEA61F8F8A2B001C3AC1 /* ViewController.swift in Sources */,
 				073DBEA41F8F8A2B001C3AC1 /* AppDelegate.swift in Sources */,
+				072A5F1E1F95965500FE2FD9 /* IGSnapProgressView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

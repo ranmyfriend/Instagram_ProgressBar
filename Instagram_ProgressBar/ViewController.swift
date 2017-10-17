@@ -8,60 +8,13 @@
 
 import UIKit
 
-enum AnimateType:String {
-    case start,play,pause,stop
-    var desc:String {
-        switch self {
-        case .start: return "Start"
-        case .play: return "Play"
-        case .pause: return "Pause"
-        case .stop: return "Stop"
-        }
-    }
-}
-
-protocol ViewAnimator:class {
-    func start(with duration:TimeInterval,width:CGFloat,completion:@escaping ()->())
-    func play()
-    func pause()
-    func stop()
-    //if you want to know the what state Animator currently being use one AnimatorType Var in protocol :)
-}
-extension ViewAnimator where Self:UIView {
-    func start(with duration:TimeInterval,width:CGFloat,completion:@escaping ()->()) {
-        UIView.animate(withDuration: duration, delay: 0.0, options: .curveLinear, animations: {
-            self.frame.size.width = width
-        }) { (finished) in
-            if finished == true {
-                completion()
-            }
-        }
-    }
-    func play(){
-        let pausedTime = layer.timeOffset
-        layer.speed = 1.0
-        layer.timeOffset = 0.0
-        layer.beginTime = 0.0
-        let timeSincePause = layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
-        layer.beginTime = timeSincePause
-    }
-    func pause(){
-        let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
-        layer.speed = 0.0
-        layer.timeOffset = pausedTime
-    }
-    func stop(){
-        play()
-        layer.removeAllAnimations()
-    }
-}
-
-class IGSnapProgressView:UIView,ViewAnimator{}
-
 class ViewController: UIViewController {
     
-    private let barCount = 5
-    private var barInitial = 0
+    private let progressorCount = 5
+    private var progressInitial = 0
+    private let timeInterval:TimeInterval = 5.0
+    private let progressorIndicatorTag:Int = 88
+    private let progressorTag:Int = 99
     
     @IBOutlet weak var startButton: UIButton! {
         didSet {
@@ -87,93 +40,97 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(progressBaseView)
-        NotificationCenter.default.addObserver(self, selector: #selector(didEnterForground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
-        createBars()
+        NotificationCenter.default.addObserver(self, selector: #selector(startProgressor), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
+        createProgressors()
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
-    @objc func didEnterForground() {
-        let holderView = getHolderView(with: barInitial)
-        let pv = getAnimatableView(with: barInitial)
-        pv.start(with: 5.0, width: holderView.frame.width) {
-            self.barInitial = self.barInitial + 1
-            if self.barInitial<self.barCount {
+    @objc private func startProgressor() {
+        let progressorIndicatorView = getProgressIndicatorView(with: progressInitial)
+        let progressorView = getProgressorView(with: progressInitial)
+        progressorView.start(with: timeInterval, width: progressorIndicatorView.frame.width) {
+            self.progressInitial = self.progressInitial + 1
+            if self.progressInitial<self.progressorCount {
                 DispatchQueue.main.async {
-                    self.startButton.setTitle(AnimateType.start.desc, for: .normal)
+                    self.startButton.setTitle(AnimateState.start.desc, for: .normal)
                     self.perform(#selector(self.didTapStart(_:)), with: self.startButton, afterDelay: 0.5)
                 }
             }else {
-                let animatableView = self.getAnimatableView(with: self.barInitial-1)
+                let animatableView = self.getProgressorView(with: self.progressInitial-1)
                 animatableView.stop()
-                self.barInitial = 0
-                self.startButton.setTitle(AnimateType.start.desc, for: .normal)
+                self.progressInitial = 0
+                self.startButton.setTitle(AnimateState.start.desc, for: .normal)
                 self.stopButton.isHidden = true
-                self.nullifyAnimatableViewWidth()
+                self.nullifyProgressorsWidth()
             }
         }
     }
     
-    func createBars() {
+    private func createProgressors() {
         let padding:CGFloat = 8 //GUI-Padding
-        let pvHeight:CGFloat = 5
-        var pvX:CGFloat = padding
-        let pvY:CGFloat = 0
-        let pvWidth = (progressBaseView.frame.width - ((CGFloat((barCount+1)) * padding)))/CGFloat(barCount)
-        for i in 0..<barCount{
-            let holder = UIView.init(frame: CGRect(x:pvX,y:pvY,width:pvWidth,height:pvHeight))
-            holder.backgroundColor = UIColor.red.withAlphaComponent(0.1)
-            holder.tag = i+88
-            holder.layer.cornerRadius = 1
-            holder.layer.masksToBounds = true
-            progressBaseView.addSubview(holder)
-            let pv = IGSnapProgressView.init(frame: CGRect(x:pvX,y:pvY,width:0,height:pvHeight))
-            pv.backgroundColor = UIColor.red
-            pv.tag = i+99
-            pv.layer.cornerRadius = holder.layer.cornerRadius
-            pv.layer.masksToBounds = true
-            progressBaseView.addSubview(pv)
-            pvX = pvX + pvWidth + padding
+        let height:CGFloat = 5
+        var x:CGFloat = padding
+        let y:CGFloat = 0
+        let width = (progressBaseView.frame.width - ((CGFloat((progressorCount+1)) * padding)))/CGFloat(progressorCount)
+        for i in 0..<progressorCount{
+            let progressIndicator = UIView.init(frame: CGRect(x:x,y:y,width:width,height:height))
+            progressBaseView.addSubview(applyProperties(progressIndicator, with: i+progressorIndicatorTag,alpha:0.1))
+            progressBaseView.addSubview(progressIndicator)
+            let progressor = IGSnapProgressView.init(frame: CGRect(x: x, y: y, width: 0, height: height))
+            progressBaseView.addSubview(applyProperties(progressor,with: i+progressorTag))
+            progressBaseView.addSubview(progressor)
+            x = x + width + padding
         }
-        
     }
     
-    func getAnimatableView(with index:Int)->IGSnapProgressView {
+    private func applyProperties<T:UIView>(_ view:T,with tag:Int,alpha:CGFloat = 1.0)->T {
+        view.layer.cornerRadius = 1
+        view.layer.masksToBounds = true
+        view.backgroundColor = UIColor.red.withAlphaComponent(alpha)
+        view.tag = tag
+        return view
+    }
+    
+    func getProgressorView(with index:Int)->IGSnapProgressView {
         return progressBaseView.subviews.filter({v in v.tag == index+99}).first as! IGSnapProgressView
     }
-    func getHolderView(with index:Int)->UIView {
+    func getProgressIndicatorView(with index:Int)->UIView {
         return progressBaseView.subviews.filter({v in v.tag == index+88}).first!
     }
-    func nullifyAnimatableViewWidth() {
-        for i in 0..<barCount{
-            let v = getAnimatableView(with: i)
+    func nullifyProgressorsWidth() {
+        for i in 0..<progressorCount{
+            let v = getProgressorView(with: i)
             v.frame.size.width = 0
             v.stop()
         }
     }
     
     @IBAction func didTapStart(_ sender: UIButton) {
-        let holderView = getHolderView(with: barInitial)
-        let animatableView = getAnimatableView(with: barInitial)
-        if sender.titleLabel?.text == AnimateType.start.desc || sender.titleLabel?.text == AnimateType.play.desc {
+        let holderView = getProgressIndicatorView(with: progressInitial)
+        let animatableView = getProgressorView(with: progressInitial)
+        if sender.titleLabel?.text == AnimateState.start.desc || sender.titleLabel?.text == AnimateState.play.desc {
             stopButton.isHidden = false
-            sender.setTitle(AnimateType.pause.desc, for: .normal)
-            if sender.titleLabel?.text == AnimateType.start.desc {
+            sender.setTitle(AnimateState.pause.desc, for: .normal)
+            if sender.titleLabel?.text == AnimateState.start.desc {
                 animatableView.start(with: 5.0, width: holderView.frame.width, completion: {
-                    self.didEnterForground()
+                    self.startProgressor()
                 })
             }else {
                 animatableView.play()
             }
         }else {
-            sender.setTitle(AnimateType.play.desc, for: .normal)
+            sender.setTitle(AnimateState.play.desc, for: .normal)
             animatableView.pause()
         }
     }
     
     @IBAction func didTapStop(_ sender: UIButton) {
-        barInitial = 0
-        startButton.setTitle(AnimateType.start.desc, for: .normal)
+        progressInitial = 0
+        startButton.setTitle(AnimateState.start.desc, for: .normal)
         sender.isHidden = true
-        self.nullifyAnimatableViewWidth()
+        self.nullifyProgressorsWidth()
     }
     
 }
