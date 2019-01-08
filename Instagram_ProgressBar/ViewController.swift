@@ -23,30 +23,30 @@ class ViewController: UIViewController {
         return getProgressorView(with: progressInitial)
     }
 
-    private var progressState:AnimeState = .none {
+    private var progressorState:ProgressorState = .none {
         didSet {
             //none->start;start->pause;pause->resume;
             //none->start;start->stop;none->start;
-            switch progressState {
+            switch progressorState {
             case .none:
-                startButton.setTitle(AnimeState.start.desc, for: .normal)
+                startButton.setTitle(ProgressorState.start.desc, for: .normal)
                 stopButton.isHidden = true
                 createProgressors()
             case .start:
-                startButton.setTitle(AnimeState.pause.desc, for: .normal)
+                startButton.setTitle(ProgressorState.pause.desc, for: .normal)
                 startProgressor()
                 stopButton.isHidden = false
             case .pause:
-                startButton.setTitle(AnimeState.resume.desc, for: .normal)
+                startButton.setTitle(ProgressorState.resume.desc, for: .normal)
                 let animatableView = getProgressorView(with: progressInitial)
                 animatableView.pause()
                 stopButton.isHidden = false
             case .resume:
-                startButton.setTitle(AnimeState.pause.desc, for: .normal)
+                startButton.setTitle(ProgressorState.pause.desc, for: .normal)
                 animatableView.resume()
                 stopButton.isHidden = false
             case .stop:
-                startButton.setTitle(AnimeState.start.desc, for: .normal)
+                startButton.setTitle(ProgressorState.start.desc, for: .normal)
                 progressInitial = 0
                 animatableView.stop()
                 stopButton.isHidden = true
@@ -80,7 +80,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         view.addSubview(progressBaseView)
 
-        progressState = .none
+        progressorState = .none
 
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
     }
@@ -90,15 +90,12 @@ class ViewController: UIViewController {
     }
     
     @objc private func willEnterForeground() {
-        switch progressState {
-        case .none: return
+        switch progressorState {
         case .start:
             if self.progressInitial < self.maxProgressorCount {
                 self.progressInitial = self.progressInitial+1
-                progressState = .start
+                progressorState = .start
             }
-        case .pause:
-            return
         default: break
         }
     }
@@ -145,7 +142,7 @@ class ViewController: UIViewController {
     private func startProgressor() {
         animatableView.start(with: 5.0, width: holderView.frame.width, completion: { [unowned self] finished in
             if self.progressInitial == self.maxProgressorCount-1 {
-                self.progressState = .stop
+                self.progressorState = .stop
             }else {
                 self.progressInitial = self.progressInitial + 1
                 self.startProgressor()
@@ -154,17 +151,17 @@ class ViewController: UIViewController {
     }
     
     @IBAction func didTapStart(_ sender: UIButton) {
-        switch progressState {
-        case .none: progressState = .start
-        case .start: progressState = .pause
-        case .pause: progressState = .resume
-        case .resume: progressState = .pause
-        case .stop: progressState = .start
+        switch progressorState {
+        case .none: progressorState = .start
+        case .start: progressorState = .pause
+        case .pause: progressorState = .resume
+        case .resume: progressorState = .pause
+        case .stop: progressorState = .start
         }
     }
     
     @IBAction func didTapStop(_ sender: UIButton) {
-        progressState = .stop
+        progressorState = .stop
     }
     
 }
