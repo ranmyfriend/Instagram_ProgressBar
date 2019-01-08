@@ -39,10 +39,10 @@ extension ViewAnimator where Self:UIView {
         }
     }
     func resume(){
+        let pausedTime = layer.timeOffset
         layer.speed = 1.0
         layer.timeOffset = 0.0
         layer.beginTime = 0.0
-        let pausedTime = layer.timeOffset
         let timeSincePause = layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
         layer.beginTime = timeSincePause
     }
