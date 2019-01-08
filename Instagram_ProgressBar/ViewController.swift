@@ -38,7 +38,6 @@ class ViewController: UIViewController {
                 stopButton.isHidden = false
             case .pause:
                 startButton.setTitle(ProgressorState.resume.desc, for: .normal)
-                let animatableView = getProgressorView(with: progressInitial)
                 animatableView.pause()
                 stopButton.isHidden = false
             case .resume:
@@ -91,7 +90,7 @@ class ViewController: UIViewController {
     
     @objc private func willEnterForeground() {
         switch progressorState {
-        case .start:
+        case .start,.resume:
             if self.progressInitial < self.maxProgressorCount {
                 self.progressInitial = self.progressInitial+1
                 progressorState = .start
@@ -107,10 +106,10 @@ class ViewController: UIViewController {
         let y:CGFloat = 0
         let width = (progressBaseView.frame.width - ((CGFloat((maxProgressorCount+1)) * padding)))/CGFloat(maxProgressorCount)
         for i in 0..<maxProgressorCount{
-            let progressIndicator = UIView.init(frame: CGRect(x:x,y:y,width:width,height:height))
+            let progressIndicator = UIView(frame: CGRect(x:x,y:y,width:width,height:height))
             progressBaseView.addSubview(applyProperties(progressIndicator, with: i+progressorIndicatorTag,alpha:0.1))
             progressBaseView.addSubview(progressIndicator)
-            let progressor = IGSnapProgressView.init(frame: CGRect(x: x, y: y, width: 0, height: height))
+            let progressor = IGSnapProgressView(frame: CGRect(x: x, y: y, width: 0, height: height))
             progressBaseView.addSubview(applyProperties(progressor,with: i+progressorTag))
             progressBaseView.addSubview(progressor)
             x = x + width + padding
@@ -152,11 +151,11 @@ class ViewController: UIViewController {
     
     @IBAction func didTapStart(_ sender: UIButton) {
         switch progressorState {
-        case .none: progressorState = .start
-        case .start: progressorState = .pause
+        case .none,
+             .stop: progressorState = .start
+        case .start,
+             .resume: progressorState = .pause
         case .pause: progressorState = .resume
-        case .resume: progressorState = .pause
-        case .stop: progressorState = .start
         }
     }
     
