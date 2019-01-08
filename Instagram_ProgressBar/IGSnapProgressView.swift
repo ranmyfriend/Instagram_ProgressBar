@@ -9,12 +9,12 @@
 import Foundation
 import UIKit
 
-enum AnimateState:String {
-    case start,play,pause,stop
+enum AnimeState:String {
+    case start,resume,pause,stop
     var desc:String {
         switch self {
         case .start: return "Start"
-        case .play: return "Play"
+        case .resume: return "Resume"
         case .pause: return "Pause"
         case .stop: return "Stop"
         }
@@ -23,7 +23,7 @@ enum AnimateState:String {
 
 protocol ViewAnimator:class {
     func start(with duration:TimeInterval,width:CGFloat,completion:@escaping ()->())
-    func play()
+    func resume()
     func pause()
     func stop()
 }
@@ -32,16 +32,17 @@ extension ViewAnimator where Self:UIView {
         UIView.animate(withDuration: duration, delay: 0.0, options: .curveLinear, animations: {
             self.frame.size.width = width
         }) { (finished) in
+            print(#function + "finished with: \(finished)")
             if finished == true {
                 completion()
             }
         }
     }
-    func play(){
-        let pausedTime = layer.timeOffset
+    func resume(){
         layer.speed = 1.0
         layer.timeOffset = 0.0
         layer.beginTime = 0.0
+        let pausedTime = layer.timeOffset
         let timeSincePause = layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
         layer.beginTime = timeSincePause
     }
@@ -51,7 +52,7 @@ extension ViewAnimator where Self:UIView {
         layer.timeOffset = pausedTime
     }
     func stop(){
-        play()
+        resume()
         layer.removeAllAnimations()
     }
 }

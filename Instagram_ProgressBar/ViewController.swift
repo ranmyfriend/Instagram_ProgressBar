@@ -40,7 +40,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(progressBaseView)
-        NotificationCenter.default.addObserver(self, selector: #selector(startProgressor), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(startProgressor), name: UIApplication.willEnterForegroundNotification, object: nil)
         createProgressors()
     }
     deinit {
@@ -54,14 +54,14 @@ class ViewController: UIViewController {
             self.progressInitial = self.progressInitial + 1
             if self.progressInitial<self.progressorCount {
                 DispatchQueue.main.async {
-                    self.startButton.setTitle(AnimateState.start.desc, for: .normal)
+                    self.startButton.setTitle(AnimeState.start.desc, for: .normal)
                     self.perform(#selector(self.didTapStart(_:)), with: self.startButton, afterDelay: 0.5)
                 }
             }else {
                 let animatableView = self.getProgressorView(with: self.progressInitial-1)
                 animatableView.stop()
                 self.progressInitial = 0
-                self.startButton.setTitle(AnimateState.start.desc, for: .normal)
+                self.startButton.setTitle(AnimeState.start.desc, for: .normal)
                 self.stopButton.isHidden = true
                 self.nullifyProgressorsWidth()
             }
@@ -110,25 +110,25 @@ class ViewController: UIViewController {
     @IBAction func didTapStart(_ sender: UIButton) {
         let holderView = getProgressIndicatorView(with: progressInitial)
         let animatableView = getProgressorView(with: progressInitial)
-        if sender.titleLabel?.text == AnimateState.start.desc || sender.titleLabel?.text == AnimateState.play.desc {
+        if sender.titleLabel?.text == AnimeState.start.desc || sender.titleLabel?.text == AnimeState.resume.desc {
             stopButton.isHidden = false
-            sender.setTitle(AnimateState.pause.desc, for: .normal)
-            if sender.titleLabel?.text == AnimateState.start.desc {
+            sender.setTitle(AnimeState.pause.desc, for: .normal)
+            if sender.titleLabel?.text == AnimeState.start.desc {
                 animatableView.start(with: 5.0, width: holderView.frame.width, completion: {
                     self.startProgressor()
                 })
             }else {
-                animatableView.play()
+                animatableView.resume()
             }
         }else {
-            sender.setTitle(AnimateState.play.desc, for: .normal)
+            sender.setTitle(AnimeState.resume.desc, for: .normal)
             animatableView.pause()
         }
     }
     
     @IBAction func didTapStop(_ sender: UIButton) {
         progressInitial = 0
-        startButton.setTitle(AnimateState.start.desc, for: .normal)
+        startButton.setTitle(AnimeState.start.desc, for: .normal)
         sender.isHidden = true
         self.nullifyProgressorsWidth()
     }
