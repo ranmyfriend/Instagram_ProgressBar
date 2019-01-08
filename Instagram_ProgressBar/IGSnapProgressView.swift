@@ -10,31 +10,32 @@ import Foundation
 import UIKit
 
 enum AnimeState:String {
-    case start,resume,pause,stop
+    case start,resume,pause,stop,none
     var desc:String {
         switch self {
         case .start: return "Start"
         case .resume: return "Resume"
         case .pause: return "Pause"
         case .stop: return "Stop"
+        case .none: return "None"
         }
     }
 }
 
 protocol ViewAnimator:class {
-    func start(with duration:TimeInterval,width:CGFloat,completion:@escaping ()->())
+    func start(with duration:TimeInterval,width:CGFloat,completion:@escaping (Bool)->())
     func resume()
     func pause()
     func stop()
 }
 extension ViewAnimator where Self:UIView {
-    func start(with duration:TimeInterval,width:CGFloat,completion:@escaping ()->()) {
+    func start(with duration:TimeInterval,width:CGFloat,completion:@escaping (_ finished:Bool)->()) {
         UIView.animate(withDuration: duration, delay: 0.0, options: .curveLinear, animations: {
             self.frame.size.width = width
         }) { (finished) in
             print(#function + "finished with: \(finished)")
             if finished == true {
-                completion()
+                completion(finished)
             }
         }
     }
